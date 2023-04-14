@@ -4,23 +4,21 @@ var db = require("../db/db")
 // get all employes 
 const getAllEmployees = async (req, res) => {
 const paginationNo = req.query.page
-const start = 0
-const END = 0
-const LIMIT = "";
-console.log("pagination ..");
 console.log(paginationNo);
-if (paginationNo != '') {
-    console.log("pagination not set");
+let START = 0
+let END = 0
+let LIMIT = "";
+if (paginationNo == undefined) {
+    console.log("page not set");
 }else{
-
-    const LIMIT = `LIMIT ${start}, ${END}`;
+    START = (paginationNo*10 )- 10
+    console.log("start "+START);
+    END = (paginationNo*10 )
+    LIMIT = `LIMIT ${START}, ${END}`;
 }
 
-
-
-
     try {
-        const sql = "SELECT * FROM `employees`"
+        const sql = `SELECT * FROM employees ${LIMIT}`
         db.query(sql, (err, result) => {
             if (err) {
                 res.status(400).json({
@@ -47,8 +45,6 @@ if (paginationNo != '') {
 // get employe by id  
 const getEmployee = async (req, res) => {
     const userId = req.query.userid
-    console.log("user id :");
-    console.log(userId);
 
     try {
         const sql = `SELECT * FROM employees WHERE id = ${userId}`
@@ -76,9 +72,22 @@ const getEmployee = async (req, res) => {
 
 // get employee 
 const newEmployee = async (req, res) => {
-
     const userDetails = req.body
-    console.log(userDetails.name);
+    const primaryEmmergency = {
+        primaryEmergencyName: req.body.primaryEmergency,
+        contact: req.body.contact,
+        relationship: req.body.primaryRelation,
+    }  
+    const secondaryEmmergency = {
+        secondaryEmergencyName: req.body.secondaryEmergency,
+        contact: req.body.contactSecond,
+        relationship: req.body.secondaryRelation,
+    }  
+
+    const primaryContact = JSON.stringify(primaryEmmergency)
+    const secondaryContact = JSON.stringify(secondaryEmmergency)
+
+
     try {
         const sql = `SELECT COUNT(*) AS userCount FROM employees WHERE email = '${userDetails.email}';`
 
@@ -100,7 +109,7 @@ const newEmployee = async (req, res) => {
                 }
                 // if user not exits 
                 else {
-                    const sql2 = `INSERT INTO employees( name, job, email, address, city, state, primaryEmergency, contact, secondaryEmergency, contactSecond, relationship) VALUES ('${userDetails.name}','${userDetails.job}','${userDetails.email}', '${userDetails.address}', '${userDetails.city}', '${userDetails.state}', '${userDetails.primaryEmergency}', '${userDetails.contact}', '${userDetails.secondaryEmergency}', '${userDetails.contactSecond}', '${userDetails.relationship}')`
+                    const sql2 = `INSERT INTO employees( name, job, email, address, city, state, primaryEmergency, secondaryEmergency) VALUES ('${userDetails.name}','${userDetails.job}','${userDetails.email}', '${userDetails.address}', '${userDetails.city}', '${userDetails.state}', '${primaryContact}', '${secondaryContact}' )`
 
                     db.query(sql2, (err, result) => {
                         if (err) {
@@ -136,8 +145,22 @@ const updateEmployee = async (req, res) => {
     const userId = req.query.userid
 
     const userDetails = req.body
+
+    const primaryEmmergency = {
+        primaryEmergencyName: req.body.primaryEmergency,
+        contact: req.body.contact,
+        relationship: req.body.primaryRelation,
+    }  
+    const secondaryEmmergency = {
+        secondaryEmergencyName: req.body.secondaryEmergency,
+        contact: req.body.contactSecond,
+        relationship: req.body.secondaryRelation,
+    }  
+
+    const primaryContact = JSON.stringify(primaryEmmergency)
+    const secondaryContact = JSON.stringify(secondaryEmmergency)
     
-    const sql = `UPDATE employees SET name='${userDetails.name}',job='${userDetails.job}',email='${userDetails.email}',address='${userDetails.address}', city='${userDetails.city}',state='${userDetails.state}',primaryEmergency='${userDetails.primaryEmergency}',contact='${userDetails.contact}', secondaryEmergency='${userDetails.secondaryEmergency}', contactSecond='${userDetails.contactSecond}',relationship='${userDetails.relationship}' WHERE id = ${userId}`;
+    const sql = `UPDATE employees SET name='${userDetails.name}',job='${userDetails.job}',email='${userDetails.email}',address='${userDetails.address}', city='${userDetails.city}',state='${userDetails.state}',primaryEmergency='${primaryContact}', secondaryEmergency='${secondaryContact}' WHERE id = ${userId}`;
 
     try {
         db.query(sql, (err, result) => {
